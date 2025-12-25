@@ -1,157 +1,136 @@
-let library = [];
+let biblioteca = [];
 let nextId = 1;
-let readingStates = ["Pendiente", "Leyendo", "Leído"];
+let estadosLectura = ["Pendiente", "Leyendo", "Leído"];
 
-const ID = 0;
-const TITLE = 1;
-const AUTHOR = 2;
-const YEAR = 3;
-const GENRE = 4;
-const STATE = 5;
-
-function showMenu() {
-    let option;
-    do {
-        option = parseInt(prompt(
-`Seleccione una opción:
+function mostrarMenu() {
+    return parseInt(prompt(
+`Seleccione la acción a realizar:
 1. Añadir libro
 2. Editar libro
 3. Eliminar libro
 4. Mostrar biblioteca
 5. Salir`
-        ));
-    } while (isNaN(option) || option < 1 || option > 5);
-    return option;
+    ));
 }
 
-function generateBookId() {
+function generarIDLibro() {
     return nextId++;
 }
 
-function validateBooksExist() {
-    if (library.length === 0) {
-        alert("La biblioteca está vacía.");
+function validarExistenLibros() {
+    if (biblioteca.length === 0) {
+        alert("No hay libros en la biblioteca.");
         return false;
     }
     return true;
 }
 
-function askNonEmptyText(message) {
-    let value;
+function pedirEstadoLectura() {
+    let opcion;
     do {
-        value = prompt(message);
-    } while (!value || value.trim() === "");
-    return value.trim();
-}
-
-function askValidYear() {
-    let year;
-    do {
-        year = parseInt(prompt("Año de publicación:"));
-    } while (isNaN(year) || year <= 0);
-    return year;
-}
-
-function askReadingState() {
-    let option;
-    do {
-        option = parseInt(prompt(
+        opcion = parseInt(prompt(
 `Seleccione el estado de lectura:
-1. ${readingStates[0]}
-2. ${readingStates[1]}
-3. ${readingStates[2]}`
+1. ${estadosLectura[0]}
+2. ${estadosLectura[1]}
+3. ${estadosLectura[2]}`
         ));
-    } while (isNaN(option) || option < 1 || option > readingStates.length);
-    return readingStates[option - 1];
+    } while (isNaN(opcion) || opcion < 1 || opcion > estadosLectura.length);
+
+    return estadosLectura[opcion - 1];
 }
 
 function getBookData() {
-    let id = generateBookId();
-    let title = askNonEmptyText("Título del libro:");
-    let author = askNonEmptyText("Autor:");
-    let year = askValidYear();
-    let genre = askNonEmptyText("Género:");
-    let state = askReadingState();
+    let id = generarIDLibro();
+    let titulo = prompt("Título del libro:");
+    let autor = prompt("Autor:");
+    let año = prompt("Año de publicación:");
+    let genero = prompt("Género:");
+    let estado = pedirEstadoLectura();
 
-    return [id, title, author, year, genre, state];
+    return [id, titulo, autor, año, genero, estado];
 }
 
-function addBook(book) {
-    library.push(book);
-    alert(`Libro "${book[TITLE]}" añadido a la biblioteca.`);
-}
-
-function formatBook(book, index) {
-    return `${index + 1}. ID: ${book[ID]}
-Título: ${book[TITLE]}
-Autor: ${book[AUTHOR]}
-Año: ${book[YEAR]}
-Género: ${book[GENRE]}
-Estado de lectura: ${book[STATE]}\n`;
+function addBook(nuevoLibro) {
+    biblioteca.push(nuevoLibro);
+    alert(`Libro "${nuevoLibro[1]}" añadido a la biblioteca.`);
 }
 
 function showBooks() {
-    if (!validateBooksExist()) return;
+    if (!validarExistenLibros()) return;
 
     let message = "📚 Biblioteca:\n\n";
-    for (let i = 0; i < library.length; i++) {
-        message += formatBook(library[i], i);
+
+    for (let i = 0; i < biblioteca.length; i++) {
+        let book = biblioteca[i];
+        message += 
+`ID: ${book[0]}
+Título: ${book[1]}
+Autor: ${book[2]}
+Año: ${book[3]}
+Género: ${book[4]}
+Estado de lectura: ${book[5]}\n\n`;
     }
+
     alert(message);
 }
 
-function findBookIndexById(id) {
-    for (let i = 0; i < library.length; i++) {
-        if (library[i][ID] === id) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-function selectBookIndex() {
-    if (!validateBooksExist()) return -1;
+function editBook() {
+    if (!validarExistenLibros()) return;
     showBooks();
 
-    let id = parseInt(prompt("Ingrese el ID del libro:"));
-    let index = findBookIndexById(id);
+    let busquedaID = parseInt(prompt("Ingrese el ID del libro que desea editar:"));
+
+    let index = biblioteca.findIndex(book => book[0] === busquedaID);
 
     if (index === -1) {
-        alert("Libro no encontrado.");
+        alert(`Libro con ID "${busquedaID}" no encontrado.`);
+        return;
     }
-    return index;
-}
 
-function editBook() {
-    let index = selectBookIndex();
-    if (index === -1) return;
+    let libro = biblioteca[index];
 
-    let book = library[index];
+    let nuevoTitulo = prompt("Nuevo título:", libro[1]);
+    let nuevoAutor = prompt("Nuevo autor:", libro[2]);
+    let nuevoAño = prompt("Nuevo año de publicación:", libro[3]);
+    let nuevoGénero = prompt("Nuevo género:", libro[4]);
+    let nuevoEstado = pedirEstadoLectura();
 
-    let title = askNonEmptyText("Nuevo título:");
-    let author = askNonEmptyText("Nuevo autor:");
-    let year = askValidYear();
-    let genre = askNonEmptyText("Nuevo género:");
-    let state = askReadingState();
+    biblioteca[index] = [
+        libro[0],
+        nuevoTitulo,
+        nuevoAutor,
+        nuevoAño,
+        nuevoGénero,
+        nuevoEstado
+    ];
 
-    library[index] = [book[ID], title, author, year, genre, state];
-    alert(`Libro con ID "${book[ID]}" actualizado.`);
+    alert(`Libro con ID "${libro[0]}" actualizado.`);
 }
 
 function deleteBook() {
-    let index = selectBookIndex();
-    if (index === -1) return;
+    if (!validarExistenLibros()) return;
+    showBooks();
 
-    let removed = library.splice(index, 1);
-    alert(`Libro "${removed[0][TITLE]}" eliminado de la biblioteca.`);
+    let busquedaID = parseInt(prompt("Ingrese el ID del libro que desea eliminar:"));
+
+    let index = biblioteca.findIndex(book => book[0] === busquedaID);
+
+    if (index === -1) {
+        alert(`Libro con ID "${busquedaID}" no encontrado.`);
+        return;
+    }
+
+    let eliminado = biblioteca.splice(index, 1);
+    alert(`Libro "${eliminado[0][1]}" eliminado de la biblioteca.`);
 }
 
-let menu = showMenu();
+let menu = mostrarMenu();
 
 while (menu !== 5) {
     switch (menu) {
         case 1:
-            addBook(getBookData());
+            let nuevoLibro = getBookData();
+            addBook(nuevoLibro);
             break;
         case 2:
             editBook();
@@ -162,8 +141,11 @@ while (menu !== 5) {
         case 4:
             showBooks();
             break;
+        default:
+            alert("Opción no válida. Seleccione del 1 al 5.");
     }
-    menu = showMenu();
+
+    menu = mostrarMenu();
 }
 
 alert("Gracias por usar el Reading Journal. ¡Hasta luego!");
